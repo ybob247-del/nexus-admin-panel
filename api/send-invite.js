@@ -1,7 +1,9 @@
 // Vercel Serverless Function to forward beta invite requests to n8n
 // This solves CORS issues by acting as a server-side proxy
 
-export default async function handler(req, res) {
+import https from 'https';
+
+export default async function handler(req, res ) {
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -16,8 +18,6 @@ export default async function handler(req, res) {
     }
 
     // Forward request to n8n webhook using native https module
-    const https = require('https' );
-    
     const n8nWebhookUrl = 'https://ybob247.app.n8n.cloud/webhook/3658ee4e-a522-4f57-ac3d-343f1fa15eff';
     const postData = JSON.stringify({ email, duration } );
 
