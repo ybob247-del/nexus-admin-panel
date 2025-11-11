@@ -118,7 +118,7 @@ export default async function handler(req, res) {
     }
 
     // Forward request to n8n webhook
-    const n8nWebhookUrl = 'https://ybob247.app.n8n.cloud/webhook/3658ee4e-a522-4f57-ac3d-343f1fa15eff';
+    const n8nWebhookUrl = 'https://ybob247.app.n8n.cloud/webhook-test/3659ee4e-a522-4f57-ac3d-343f11a15eff';
     const postData = JSON.stringify({ email, duration });
 
     const options = {
