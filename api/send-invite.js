@@ -118,7 +118,7 @@ export default async function handler(req, res) {
     }
 
     // Forward request to n8n webhook
-    const n8nWebhookUrl = 'https://ybob247.app.n8n.cloud/webhook/3659ee4e-a522-4f57-ac3d-343f1fa15eff';
+    const n8nWebhookUrl = 'https://ybob247.app.n8n.cloud/webhook/3658ee4e-a522-4f57-ac3d-343f1fa15eff';
     const postData = JSON.stringify({ email, duration });
 
     const options = {
@@ -154,7 +154,8 @@ export default async function handler(req, res) {
       request.end();
     });
 
-    if (n8nResponse.statusCode === 200) {
+    // Accept any 2xx status code as success (200, 201, 204, etc.)
+    if (n8nResponse.statusCode >= 200 && n8nResponse.statusCode < 300) {
       // Store invite in database
       await storeInvite(email, duration, 'sent');
 
@@ -167,7 +168,7 @@ export default async function handler(req, res) {
       // Store failed invite
       await storeInvite(email, duration, 'failed');
       
-      throw new Error(`n8n webhook returned status ${n8nResponse.statusCode}`);
+      throw new Error(`n8n webhook returned status ${n8nResponse.statusCode}: ${n8nResponse.body}`);
     }
   } catch (error) {
     console.error('Error:', error);
