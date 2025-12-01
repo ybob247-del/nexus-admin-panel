@@ -58,7 +58,6 @@ export default async function handler(req, res) {
         s.message_content,
         s.status,
         s.sent_at,
-        s.delivered_at,
         s.error_message,
         c.campaign_name
       FROM sms_campaign_sends s
