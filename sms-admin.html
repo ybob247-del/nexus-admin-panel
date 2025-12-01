@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Biomedical Intelligence - SMS Management</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .back-link {
+            position: absolute;
+            left: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: white;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 16px;
+            text-align: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab:hover {
+            background: #e8e8e8;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 40px 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .subtitle {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .chart-container {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container h3 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th {
+            background: #f5f5f5;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            font-size: 22px;
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #999;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .tip-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .tip-card:hover {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .tip-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .tip-card-content {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .tip-card-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .tip-card-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .category-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .category-filter button {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .category-filter button:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .category-filter button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-link">← Back to Beta Invites</a>
+            <h1>🧬 Nexus Biomedical Intelligence</h1>
+            <p>SMS Management System</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('analytics')">📱 SMS Analytics</button>
+            <button class="nav-tab" onclick="switchTab('tips')">💊 Health Tips</button>
+            <button class="nav-tab" onclick="switchTab('testing')">🧪 A/B Testing</button>
+        </div>
+
+        <!-- SMS Analytics Tab -->
+        <div class="tab-content active" id="analyticsTab">
+            <div class="loading" id="analyticsLoading">Loading SMS analytics</div>
+            <div id="analyticsContent" style="display: none;">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total SMS Sent</h3>
+                        <div class="value" id="totalSent">0</div>
+                        <div class="subtitle">All time</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Delivery Rate</h3>
+                        <div class="value" id="deliveryRate">0%</div>
+                        <div class="subtitle">Successfully delivered</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>SMS Enabled Users</h3>
+                        <div class="value" id="smsEnabledUsers">0</div>
+                        <div class="subtitle">Opted in for SMS</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Active Campaigns</h3>
+                        <div class="value" id="activeCampaigns">0</div>
+                        <div class="subtitle">Running campaigns</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3>Campaign Performance</h3>
+                    <canvas id="campaignChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h3>SMS Campaigns Overview</h3>
+                    <table id="campaignsTable">
+                        <thead>
+                            <tr>
+                                <th>Campaign Name</th>
+                                <th>Type</th>
+                                <th>Total Sent</th>
+                                <th>Delivered</th>
+                                <th>Failed</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div class="chart-container">
+                    <h3>Recent SMS Sends (Last 50)</h3>
+                    <table id="recentSendsTable">
+                        <thead>
+                            <tr>
+                                <th>Campaign</th>
+                                <th>Phone</th>
+                                <th>Status</th>
+                                <th>Sent At</th>
+                                <th>Message Preview</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Health Tips Management Tab -->
+        <div class="tab-content" id="tipsTab">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h2 style="font-size: 24px; color: #333;">Health Tips Library</h2>
+                <button class="btn btn-primary" onclick="openAddTipModal()">+ Add New Tip</button>
+            </div>
+
+            <div class="category-filter" id="categoryFilter">
+                <button class="active" data-category="all">All Categories</button>
+            </div>
+
+            <div class="loading" id="tipsLoading">Loading health tips</div>
+            <div id="tipsContent" style="display: none;"></div>
+        </div>
+
+        <!-- A/B Testing Tab -->
+        <div class="tab-content" id="testingTab">
+            <div style="text-align: center; padding: 60px 20px;">
+                <h2 style="font-size: 28px; color: #333; margin-bottom: 15px;">🧪 A/B Testing Dashboard</h2>
+                <p style="color: #666; font-size: 16px; margin-bottom: 30px;">
+                    A/B testing functionality coming soon! This will allow you to test different SMS message templates,
+                    timing strategies, and content variations to optimize engagement.
+                </p>
+                <div style="background: #f8f9fa; border-radius: 12px; padding: 30px; max-width: 600px; margin: 0 auto;">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">Planned Features:</h3>
+                    <ul style="text-align: left; color: #666; line-height: 2;">
+                        <li>Test SMS with vs without citations</li>
+                        <li>Compare different message templates</li>
+                        <li>Measure click-through rates</li>
+                        <li>Statistical significance calculator</li>
+                        <li>Automatic winner rollout</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Tip Modal -->
+    <div class="modal" id="tipModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Health Tip</h2>
+                <button class="close-btn" onclick="closeTipModal()">&times;</button>
+            </div>
+            <form id="tipForm" onsubmit="saveTip(event)">
+                <input type="hidden" id="tipId">
+                
+                <div class="form-group">
+                    <label>Tip Content *</label>
+                    <textarea id="tipContent" required placeholder="Enter the health tip message..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Category *</label>
+                    <select id="tipCategory" required>
+                        <option value="">Select category</option>
+                        <option value="hormone_health">Hormone Health</option>
+                        <option value="nutrition">Nutrition</option>
+                        <option value="exercise">Exercise</option>
+                        <option value="sleep">Sleep</option>
+                        <option value="stress_management">Stress Management</option>
+                        <option value="edc_reduction">EDC Reduction</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Scientific Citation</label>
+                    <input type="text" id="tipCitation" placeholder="Author et al. (Year). Journal. PMID: xxxxx">
+                </div>
+
+                <div class="form-group">
+                    <label>Source Journal</label>
+                    <input type="text" id="tipJournal" placeholder="e.g., Journal of Endocrinology">
+                </div>
+
+                <div class="form-group">
+                    <label>Publication Year</label>
+                    <input type="number" id="tipYear" min="1900" max="2025" placeholder="e.g., 2023">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="tipActive" checked>
+                        Active (visible in rotation)
+                    </label>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeTipModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Tip</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let analyticsData = null;
+        let healthTips = [];
+        let campaignChart = null;
+
+        // Tab switching
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            if (tab === 'analytics') {
+                document.getElementById('analyticsTab').classList.add('active');
+                loadAnalytics();
+            } else if (tab === 'tips') {
+                document.getElementById('tipsTab').classList.add('active');
+                loadHealthTips();
+            } else if (tab === 'testing') {
+                document.getElementById('testingTab').classList.add('active');
+            }
+        }
+
+        // Load SMS Analytics
+        async function loadAnalytics() {
+            if (analyticsData) return; // Already loaded
+
+            try {
+                const response = await fetch('/api/sms-analytics');
+                const result = await response.json();
+                
+                if (result.success) {
+                    analyticsData = result.data;
+                    renderAnalytics();
+                } else {
+                    throw new Error(result.error || 'Failed to load analytics');
+                }
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+                document.getElementById('analyticsLoading').innerHTML = 
+                    '<div class="alert alert-danger">Failed to load analytics: ' + error.message + '</div>';
+            }
+        }
+
+        function renderAnalytics() {
+            document.getElementById('analyticsLoading').style.display = 'none';
+            document.getElementById('analyticsContent').style.display = 'block';
+
+            // Update summary stats
+            document.getElementById('totalSent').textContent = analyticsData.summary.totalSent.toLocaleString();
+            document.getElementById('deliveryRate').textContent = analyticsData.summary.deliveryRate + '%';
+            document.getElementById('smsEnabledUsers').textContent = analyticsData.preferencesStats.sms_enabled || 0;
+            document.getElementById('activeCampaigns').textContent = analyticsData.campaigns.filter(c => c.is_active).length;
+
+            // Render campaigns table
+            const campaignsTableBody = document.querySelector('#campaignsTable tbody');
+            campaignsTableBody.innerHTML = analyticsData.campaigns.map(campaign => `
+                <tr>
+                    <td><strong>${campaign.campaign_name}</strong></td>
+                    <td><span class="badge badge-info">${campaign.campaign_type}</span></td>
+                    <td>${campaign.total_sends || 0}</td>
+                    <td>${campaign.delivered || 0}</td>
+                    <td>${campaign.failed || 0}</td>
+                    <td>
+                        <span class="badge ${campaign.is_active ? 'badge-success' : 'badge-warning'}">
+                            ${campaign.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Render recent sends table
+            const recentSendsTableBody = document.querySelector('#recentSendsTable tbody');
+            recentSendsTableBody.innerHTML = analyticsData.recentSends.map(send => `
+                <tr>
+                    <td>${send.campaign_name}</td>
+                    <td>${send.phone_number}</td>
+                    <td>
+                        <span class="badge ${
+                            send.status === 'delivered' ? 'badge-success' : 
+                            send.status === 'failed' ? 'badge-danger' : 
+                            'badge-warning'
+                        }">
+                            ${send.status}
+                        </span>
+                    </td>
+                    <td>${new Date(send.sent_at).toLocaleString()}</td>
+                    <td>${send.message_content.substring(0, 50)}...</td>
+                </tr>
+            `).join('');
+
+            // Render campaign performance chart
+            renderCampaignChart();
+        }
+
+        function renderCampaignChart() {
+            const ctx = document.getElementById('campaignChart').getContext('2d');
+            
+            if (campaignChart) {
+                campaignChart.destroy();
+            }
+
+            const campaigns = analyticsData.campaigns;
+            
+            campaignChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: campaigns.map(c => c.campaign_name),
+                    datasets: [
+                        {
+                            label: 'Delivered',
+                            data: campaigns.map(c => c.delivered || 0),
+                            backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                            borderColor: 'rgba(40, 167, 69, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Failed',
+                            data: campaigns.map(c => c.failed || 0),
+                            backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                            borderColor: 'rgba(220, 53, 69, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load Health Tips
+        async function loadHealthTips() {
+            if (healthTips.length > 0) return; // Already loaded
+
+            try {
+                const response = await fetch('/api/health-tips');
+                const result = await response.json();
+                
+                if (result.success) {
+                    healthTips = result.tips;
+                    renderHealthTips();
+                    renderCategoryFilter(result.categoryStats);
+                } else {
+                    throw new Error(result.error || 'Failed to load health tips');
+                }
+            } catch (error) {
+                console.error('Error loading health tips:', error);
+                document.getElementById('tipsLoading').innerHTML = 
+                    '<div class="alert alert-danger">Failed to load health tips: ' + error.message + '</div>';
+            }
+        }
+
+        function renderCategoryFilter(categoryStats) {
+            const filterContainer = document.getElementById('categoryFilter');
+            const allButton = filterContainer.querySelector('[data-category="all"]');
+            
+            categoryStats.forEach(stat => {
+                const button = document.createElement('button');
+                button.dataset.category = stat.category;
+                button.textContent = `${stat.category.replace('_', ' ')} (${stat.count})`;
+                button.onclick = () => filterByCategory(stat.category);
+                filterContainer.appendChild(button);
+            });
+        }
+
+        function filterByCategory(category) {
+            document.querySelectorAll('.category-filter button').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.category === category) {
+                    btn.classList.add('active');
+                }
+            });
+
+            const filtered = category === 'all' ? healthTips : healthTips.filter(tip => tip.category === category);
+            renderHealthTips(filtered);
+        }
+
+        function renderHealthTips(tips = healthTips) {
+            document.getElementById('tipsLoading').style.display = 'none';
+            document.getElementById('tipsContent').style.display = 'block';
+
+            const tipsContent = document.getElementById('tipsContent');
+            tipsContent.innerHTML = tips.map(tip => `
+                <div class="tip-card">
+                    <div class="tip-card-header">
+                        <span class="badge ${tip.is_active ? 'badge-success' : 'badge-warning'}">
+                            ${tip.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                        <span class="badge badge-info">${tip.category}</span>
+                    </div>
+                    <div class="tip-card-content">${tip.tip_content}</div>
+                    ${tip.citation ? `
+                        <div class="tip-card-meta">
+                            <span>📚 ${tip.source_journal || 'N/A'}</span>
+                            <span>📅 ${tip.publication_year || 'N/A'}</span>
+                        </div>
+                        <div style="font-size: 12px; color: #999; margin-bottom: 15px;">
+                            ${tip.citation}
+                        </div>
+                    ` : ''}
+                    <div class="tip-card-actions">
+                        <button class="btn btn-sm btn-primary" onclick="editTip(${tip.id})">Edit</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteTip(${tip.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Tip Modal Functions
+        function openAddTipModal() {
+            document.getElementById('modalTitle').textContent = 'Add New Health Tip';
+            document.getElementById('tipForm').reset();
+            document.getElementById('tipId').value = '';
+            document.getElementById('tipActive').checked = true;
+            document.getElementById('tipModal').classList.add('active');
+        }
+
+        function closeTipModal() {
+            document.getElementById('tipModal').classList.remove('active');
+        }
+
+        function editTip(id) {
+            const tip = healthTips.find(t => t.id === id);
+            if (!tip) return;
+
+            document.getElementById('modalTitle').textContent = 'Edit Health Tip';
+            document.getElementById('tipId').value = tip.id;
+            document.getElementById('tipContent').value = tip.tip_content;
+            document.getElementById('tipCategory').value = tip.category;
+            document.getElementById('tipCitation').value = tip.citation || '';
+            document.getElementById('tipJournal').value = tip.source_journal || '';
+            document.getElementById('tipYear').value = tip.publication_year || '';
+            document.getElementById('tipActive').checked = tip.is_active;
+            document.getElementById('tipModal').classList.add('active');
+        }
+
+        async function saveTip(event) {
+            event.preventDefault();
+
+            const tipId = document.getElementById('tipId').value;
+            const tipData = {
+                tip_content: document.getElementById('tipContent').value,
+                category: document.getElementById('tipCategory').value,
+                citation: document.getElementById('tipCitation').value || null,
+                source_journal: document.getElementById('tipJournal').value || null,
+                publication_year: document.getElementById('tipYear').value || null,
+                is_active: document.getElementById('tipActive').checked
+            };
+
+            try {
+                const method = tipId ? 'PUT' : 'POST';
+                if (tipId) tipData.id = parseInt(tipId);
+
+                const response = await fetch('/api/health-tips', {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(tipData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    closeTipModal();
+                    healthTips = []; // Clear cache
+                    loadHealthTips(); // Reload
+                    alert(tipId ? 'Health tip updated successfully!' : 'Health tip created successfully!');
+                } else {
+                    throw new Error(result.error || 'Failed to save tip');
+                }
+            } catch (error) {
+                console.error('Error saving tip:', error);
+                alert('Failed to save tip: ' + error.message);
+            }
+        }
+
+        async function deleteTip(id) {
+            if (!confirm('Are you sure you want to delete this health tip?')) return;
+
+            try {
+                const response = await fetch(`/api/health-tips?id=${id}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    healthTips = []; // Clear cache
+                    loadHealthTips(); // Reload
+                    alert('Health tip deleted successfully!');
+                } else {
+                    throw new Error(result.error || 'Failed to delete tip');
+                }
+            } catch (error) {
+                console.error('Error deleting tip:', error);
+                alert('Failed to delete tip: ' + error.message);
+            }
+        }
+
+        // Load analytics on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadAnalytics();
+        });
+    </script>
+</body>
+</html>

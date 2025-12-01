@@ -1,0 +1,16 @@
+{
+  "name": "nexus-admin-panel",
+  "version": "2.0.0",
+  "description": "Nexus Biomedical Intelligence Admin Panel with SMS Management",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "mysql2": "^3.6.5"
+  },
+  "engines": {
+    "node": ">=18.x"
+  }
+}
