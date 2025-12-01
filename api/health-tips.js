@@ -40,8 +40,7 @@ export default async function handler(req, res) {
           publication_year,
           is_active,
           last_sent_at,
-          created_at,
-          updated_at
+          created_at
         FROM sms_health_tips
         ORDER BY id ASC
       `);
@@ -102,8 +101,7 @@ export default async function handler(req, res) {
           citation = ?,
           source_journal = ?,
           publication_year = ?,
-          is_active = COALESCE(?, is_active),
-          updated_at = CURRENT_TIMESTAMP
+          is_active = COALESCE(?, is_active)
         WHERE id = ?
       `, [tip_content, category, citation, source_journal, publication_year, is_active, id]);
       
