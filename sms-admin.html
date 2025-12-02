@@ -524,21 +524,56 @@
 
         <!-- A/B Testing Tab -->
         <div class="tab-content" id="testingTab">
-            <div style="text-align: center; padding: 60px 20px;">
-                <h2 style="font-size: 28px; color: #333; margin-bottom: 15px;">🧪 A/B Testing Dashboard</h2>
-                <p style="color: #666; font-size: 16px; margin-bottom: 30px;">
-                    A/B testing functionality coming soon! This will allow you to test different SMS message templates,
-                    timing strategies, and content variations to optimize engagement.
-                </p>
-                <div style="background: #f8f9fa; border-radius: 12px; padding: 30px; max-width: 600px; margin: 0 auto;">
-                    <h3 style="color: #667eea; margin-bottom: 15px;">Planned Features:</h3>
-                    <ul style="text-align: left; color: #666; line-height: 2;">
-                        <li>Test SMS with vs without citations</li>
-                        <li>Compare different message templates</li>
-                        <li>Measure click-through rates</li>
-                        <li>Statistical significance calculator</li>
-                        <li>Automatic winner rollout</li>
-                    </ul>
+            <div class="loading" id="testingLoading">Loading A/B tests...</div>
+            <div id="testingContent" style="display: none;">
+                <!-- Create New Test Section -->
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
+                    <h2 style="margin-bottom: 20px;">🧪 Create New A/B Test</h2>
+                    <form id="createTestForm" style="display: grid; gap: 15px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Test Name</label>
+                            <input type="text" id="testName" required placeholder="e.g., SMS Citation Test" 
+                                   style="width: 100%; padding: 10px; border-radius: 8px; border: none; font-size: 14px;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Description</label>
+                            <textarea id="testDescription" required placeholder="Describe what you're testing..."
+                                      style="width: 100%; padding: 10px; border-radius: 8px; border: none; font-size: 14px; min-height: 80px;"></textarea>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Variant A Name</label>
+                                <input type="text" id="variantAName" required placeholder="e.g., With Citations" 
+                                       style="width: 100%; padding: 10px; border-radius: 8px; border: none; font-size: 14px;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Variant B Name</label>
+                                <input type="text" id="variantBName" required placeholder="e.g., Without Citations" 
+                                       style="width: 100%; padding: 10px; border-radius: 8px; border: none; font-size: 14px;">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Traffic Split (%)</label>
+                            <input type="number" id="trafficSplit" required value="50" min="10" max="90" 
+                                   style="width: 100%; padding: 10px; border-radius: 8px; border: none; font-size: 14px;">
+                            <small style="opacity: 0.9; display: block; margin-top: 5px;">Percentage of users assigned to Variant A (remainder goes to Variant B)</small>
+                        </div>
+                        <button type="submit" style="background: white; color: #667eea; padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 16px;">
+                            Create A/B Test
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Active Tests Section -->
+                <div style="margin-bottom: 30px;">
+                    <h2 style="margin-bottom: 20px; color: #333;">📊 Active Tests</h2>
+                    <div id="activeTestsList"></div>
+                </div>
+
+                <!-- Completed Tests Section -->
+                <div>
+                    <h2 style="margin-bottom: 20px; color: #333;">✅ Completed Tests</h2>
+                    <div id="completedTestsList"></div>
                 </div>
             </div>
         </div>
@@ -622,6 +657,7 @@
                 loadHealthTips();
             } else if (tab === 'testing') {
                 document.getElementById('testingTab').classList.add('active');
+                loadABTests();
             }
         }
 
@@ -917,6 +953,187 @@
                 alert('Failed to delete tip: ' + error.message);
             }
         }
+
+        // A/B Testing Functions
+        let abTests = [];
+
+        async function loadABTests() {
+            try {
+                document.getElementById('testingLoading').style.display = 'block';
+                document.getElementById('testingContent').style.display = 'none';
+
+                const response = await fetch('/api/ab-tests');
+                const result = await response.json();
+                
+                if (result.success) {
+                    abTests = result.data;
+                    renderABTests();
+                    document.getElementById('testingLoading').style.display = 'none';
+                    document.getElementById('testingContent').style.display = 'block';
+                } else {
+                    throw new Error(result.error || 'Failed to load A/B tests');
+                }
+            } catch (error) {
+                console.error('Error loading A/B tests:', error);
+                document.getElementById('testingLoading').innerHTML = 
+                    '<div style="text-align: center; padding: 40px; color: #666;">Failed to load A/B tests: ' + error.message + '</div>';
+            }
+        }
+
+        function renderABTests() {
+            const activeTests = abTests.filter(t => t.status === 'active');
+            const completedTests = abTests.filter(t => t.status === 'completed');
+
+            // Render active tests
+            const activeTestsHTML = activeTests.length > 0 ? activeTests.map(test => `
+                <div style="background: white; border: 2px solid #667eea; border-radius: 12px; padding: 25px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
+                        <div>
+                            <h3 style="color: #333; margin-bottom: 8px;">${test.test_name}</h3>
+                            <p style="color: #666; font-size: 14px; margin-bottom: 10px;">${test.description}</p>
+                            <div style="display: flex; gap: 15px; font-size: 13px; color: #999;">
+                                <span>📅 Started: ${new Date(test.created_at).toLocaleDateString()}</span>
+                                <span>👥 ${test.total_participants || 0} participants</span>
+                            </div>
+                        </div>
+                        <button onclick="completeTest(${test.id})" style="background: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                            Complete Test
+                        </button>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                            <h4 style="color: #667eea; margin-bottom: 15px;">${test.variant_a_name}</h4>
+                            <div style="display: grid; gap: 10px; font-size: 14px;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: #666;">Participants:</span>
+                                    <strong>${test.variant_a_count || 0}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: #666;">Conversions:</span>
+                                    <strong>${test.variant_a_conversions || 0}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: #666;">Conversion Rate:</span>
+                                    <strong style="color: #28a745;">${test.variant_a_count > 0 ? ((test.variant_a_conversions / test.variant_a_count) * 100).toFixed(2) : 0}%</strong>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                            <h4 style="color: #764ba2; margin-bottom: 15px;">${test.variant_b_name}</h4>
+                            <div style="display: grid; gap: 10px; font-size: 14px;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: #666;">Participants:</span>
+                                    <strong>${test.variant_b_count || 0}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: #666;">Conversions:</span>
+                                    <strong>${test.variant_b_conversions || 0}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: #666;">Conversion Rate:</span>
+                                    <strong style="color: #28a745;">${test.variant_b_count > 0 ? ((test.variant_b_conversions / test.variant_b_count) * 100).toFixed(2) : 0}%</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('') : '<p style="text-align: center; color: #999; padding: 40px;">No active tests. Create one above to get started!</p>';
+
+            document.getElementById('activeTestsList').innerHTML = activeTestsHTML;
+
+            // Render completed tests
+            const completedTestsHTML = completedTests.length > 0 ? completedTests.map(test => {
+                const variantARate = test.variant_a_count > 0 ? ((test.variant_a_conversions / test.variant_a_count) * 100) : 0;
+                const variantBRate = test.variant_b_count > 0 ? ((test.variant_b_conversions / test.variant_b_count) * 100) : 0;
+                const winner = variantARate > variantBRate ? test.variant_a_name : test.variant_b_name;
+                const winnerRate = Math.max(variantARate, variantBRate).toFixed(2);
+
+                return `
+                    <div style="background: #f8f9fa; border-radius: 12px; padding: 25px; margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                            <div>
+                                <h3 style="color: #333; margin-bottom: 8px;">${test.test_name}</h3>
+                                <p style="color: #666; font-size: 14px;">${test.description}</p>
+                            </div>
+                            <div style="background: #28a745; color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">
+                                🏆 Winner: ${winner} (${winnerRate}%)
+                            </div>
+                        </div>
+                        <div style="font-size: 13px; color: #999;">
+                            📅 ${new Date(test.created_at).toLocaleDateString()} - ${new Date(test.completed_at).toLocaleDateString()} | 
+                            👥 ${test.total_participants || 0} participants
+                        </div>
+                    </div>
+                `;
+            }).join('') : '<p style="text-align: center; color: #999; padding: 40px;">No completed tests yet.</p>';
+
+            document.getElementById('completedTestsList').innerHTML = completedTestsHTML;
+        }
+
+        async function completeTest(testId) {
+            if (!confirm('Are you sure you want to complete this test? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/ab-tests/complete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ test_id: testId })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Test completed successfully!');
+                    loadABTests();
+                } else {
+                    throw new Error(result.error || 'Failed to complete test');
+                }
+            } catch (error) {
+                console.error('Error completing test:', error);
+                alert('Failed to complete test: ' + error.message);
+            }
+        }
+
+        // Handle create test form submission
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('createTestForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const testData = {
+                    test_name: document.getElementById('testName').value,
+                    description: document.getElementById('testDescription').value,
+                    variant_a_name: document.getElementById('variantAName').value,
+                    variant_b_name: document.getElementById('variantBName').value,
+                    traffic_split: parseInt(document.getElementById('trafficSplit').value)
+                };
+
+                try {
+                    const response = await fetch('/api/ab-tests/create', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(testData)
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('A/B test created successfully!');
+                        document.getElementById('createTestForm').reset();
+                        document.getElementById('trafficSplit').value = '50';
+                        loadABTests();
+                    } else {
+                        throw new Error(result.error || 'Failed to create test');
+                    }
+                } catch (error) {
+                    console.error('Error creating test:', error);
+                    alert('Failed to create test: ' + error.message);
+                }
+            });
+        });
 
         // Load analytics on page load
         window.addEventListener('DOMContentLoaded', () => {
