@@ -2,6 +2,7 @@
 // This version stores invite history in a database and enforces rate limits
 
 import https from 'https';
+import { verifyAdminToken } from './_auth.js';
 
 // In-memory rate limit storage (will be replaced with Redis/database in production)
 const rateLimitStore = new Map();
@@ -81,6 +82,10 @@ async function storeInvite(email, duration, status) {
 }
 
 export default async function handler(req, res) {
+  // Require valid admin JWT
+  const auth = verifyAdminToken(req, res);
+  if (!auth.valid) return;
+
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });

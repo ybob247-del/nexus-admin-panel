@@ -1,5 +1,6 @@
 // API endpoint to manage SMS health tips
 import mysql from 'mysql2/promise';
+import { verifyAdminToken } from './_auth.js';
 
 // Parse DATABASE_URL from environment
 function parseDatabaseUrl(url) {
@@ -21,6 +22,10 @@ function parseDatabaseUrl(url) {
 }
 
 export default async function handler(req, res) {
+  // Require valid admin JWT for all operations
+  const auth = verifyAdminToken(req, res);
+  if (!auth.valid) return;
+
   let connection;
   
   try {

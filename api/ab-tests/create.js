@@ -21,6 +21,10 @@ function parseDatabaseUrl(url) {
 }
 
 export default async function handler(req, res) {
+  // Require valid admin JWT
+  const auth = verifyAdminToken(req, res);
+  if (!auth.valid) return;
+
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });

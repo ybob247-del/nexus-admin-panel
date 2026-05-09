@@ -5,6 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus Biomedical Intelligence - SMS Management</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Auth guard — redirect to admin panel if not authenticated
+        (async function enforceAuth() {
+            const token = localStorage.getItem('admin_token');
+            if (!token) {
+                window.location.href = '/index.html';
+                return;
+            }
+            try {
+                const res = await fetch('/api/admin/verify', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                if (!data.valid) {
+                    localStorage.removeItem('admin_token');
+                    window.location.href = '/index.html';
+                }
+            } catch (e) {
+                localStorage.removeItem('admin_token');
+                window.location.href = '/index.html';
+            }
+        })();
+    </script>
     <style>
         * {
             margin: 0;

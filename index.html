@@ -460,27 +460,72 @@
     </div>
 
     <script>
-        // Password protection
-        const ADMIN_PASSWORD = 'nexus2025';
-
-        // In-memory storage (will be replaced with database)
+        // Server-side authentication — no hardcoded passwords
         let inviteHistory = JSON.parse(localStorage.getItem('inviteHistory') || '[]');
         let rateLimitData = JSON.parse(localStorage.getItem('rateLimitData') || '{"hourly": [], "daily": []}');
 
-        function checkPassword() {
+        // Check if already authenticated on page load
+        (async function checkExistingAuth() {
+            const token = localStorage.getItem('admin_token');
+            if (!token) return;
+            try {
+                const res = await fetch('/api/admin/verify', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                if (data.valid) {
+                    document.getElementById('passwordContainer').style.display = 'none';
+                    document.getElementById('adminPanel').classList.add('active');
+                    loadDashboard();
+                } else {
+                    localStorage.removeItem('admin_token');
+                }
+            } catch (e) {
+                localStorage.removeItem('admin_token');
+            }
+        })();
+
+        async function checkPassword() {
             const password = document.getElementById('adminPassword').value;
             const errorDiv = document.getElementById('passwordError');
-            
-            if (password === ADMIN_PASSWORD) {
-                document.getElementById('passwordContainer').style.display = 'none';
-                document.getElementById('adminPanel').classList.add('active');
-                errorDiv.style.display = 'none';
-                loadDashboard();
-            } else {
-                errorDiv.textContent = '❌ Incorrect password. Please try again.';
+            const btn = document.querySelector('#passwordContainer .submit-btn');
+
+            if (!password) {
+                errorDiv.textContent = '❌ Please enter a password.';
                 errorDiv.style.display = 'block';
-                document.getElementById('adminPassword').value = '';
-                document.getElementById('adminPassword').focus();
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Verifying...';
+            errorDiv.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    localStorage.setItem('admin_token', data.token);
+                    document.getElementById('passwordContainer').style.display = 'none';
+                    document.getElementById('adminPanel').classList.add('active');
+                    errorDiv.style.display = 'none';
+                    loadDashboard();
+                } else {
+                    errorDiv.textContent = '❌ Invalid credentials. Please try again.';
+                    errorDiv.style.display = 'block';
+                    document.getElementById('adminPassword').value = '';
+                    document.getElementById('adminPassword').focus();
+                }
+            } catch (e) {
+                errorDiv.textContent = '❌ Authentication error. Please try again.';
+                errorDiv.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Access Admin Panel';
             }
         }
 

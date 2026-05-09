@@ -1,5 +1,6 @@
 // API endpoint to fetch all A/B tests with statistics
 import mysql from 'mysql2/promise';
+import { verifyAdminToken } from './_auth.js';
 
 // Parse DATABASE_URL from environment
 function parseDatabaseUrl(url) {
@@ -21,6 +22,10 @@ function parseDatabaseUrl(url) {
 }
 
 export default async function handler(req, res) {
+  // Require valid admin JWT
+  const auth = verifyAdminToken(req, res);
+  if (!auth.valid) return;
+
   // Only allow GET requests
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
