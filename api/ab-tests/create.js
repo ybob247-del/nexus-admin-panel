@@ -1,5 +1,6 @@
 // API endpoint to create a new A/B test
 import mysql from 'mysql2/promise';
+import { verifyAdminToken } from '../_auth.js';
 
 // Parse DATABASE_URL from environment
 function parseDatabaseUrl(url) {
